@@ -4,15 +4,24 @@ import { Button, Textarea } from "@nextui-org/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { useState, useRef, useEffect } from "react";
 import { ArrowUp, GPTIcon } from "./components/Icons";
+import Sorting_Hat from "./Sorting_Hat.png"; 
 
 export default function Home() {
+  const [script, setHistory] = useState( 
+    `
+    Im writing a script and you need to tell me what the sorting hat in harrz potter would say next.
+    Its about Rutul a wizard girl who iis gonna get sorted into a house of hogwards.
+    
+    `
+    
+  );
+  const [hatresponse, setHatResponse] = useState("");
+
   const [message, setMessage] = useState(""); // User input message
   const [chat, setChat] = useState<string[]>([]); // Chat history
-
   // Reference to the chatbox container for scrolling
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
   const sendMessage = useMutation({
     mutationKey: ["sendMessage"],
     mutationFn: async (message: string) => {
@@ -30,13 +39,16 @@ export default function Home() {
   });
 
   const sendingChat = async (message: string) => {
+    console.log(message)
+    await setHistory(script + " rutul said this to the sorting hat: " + message + ".   Then the sorting hat said: " );
+    console.log(script + " rutul said this to the sorting hat: " + message + ".   Then the sorting hat said: ");
     // Step 1: Make a POST request and set up streaming
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message }), // Send the user message
+      }, 
+      body: JSON.stringify({ message: script + " rutul said this to the sorting hat: " + message + "      .Then the sorting hat said: "}), // Send the user message
     });
 
     if (!response.ok) {
@@ -46,7 +58,7 @@ export default function Home() {
 
     const reader = response.body?.getReader();
     const decoder = new TextDecoder();
-    let fullBotMessage = ""; // To accumulate the bot's response progressively
+    let fullBotMessage = ""; // To accumulate the bot's respo    const decoder = new TextDecoder();nse progressively
 
     // Step 2: Process the stream in chunks
     while (true) {
@@ -68,7 +80,7 @@ export default function Home() {
           const parsedData = JSON.parse(jsonString); // Parse the JSON string
           const botMessage = parsedData.message.content.parts[0]; // Extract the bot's message
           fullBotMessage = botMessage;
-
+          await setHatResponse(fullBotMessage);
           // Update the chat with the accumulated bot response
           setChat((prevChat) => {
             const updatedChat = [...prevChat];
@@ -96,14 +108,17 @@ export default function Home() {
 
     // Append the user's message to the chat
     setChat((prevChat) => [...prevChat, `You: ${message}`]);
-
-    // Clear the input message
     setMessage("");
+
 
     sendMessage.mutate(message);
   };
+  
 
-  // Auto-scroll to the bottom of the chatbox when a new message is added
+
+  useEffect(() => {
+  }, []);
+
   useEffect(() => {
     if (chatContainerRef.current) {
       window.scrollTo({
@@ -118,11 +133,17 @@ export default function Home() {
       inputRef.current.focus(); // Focus the input field when not loading
     }
   }, [sendMessage.isPending]);
-
   return (
     <>
       <main className="relative h-full w-full flex-1 overflow-auto">
-        <div className="flex h-full flex-col focus-visible:outline-0">
+
+      <div
+      className="flex justify-center items-center h-screen bg-black"
+      style={{ backgroundColor: 'black' , maxHeight: '50vh' }}
+    >
+      <img src={Sorting_Hat.src} alt="Sorting Hat" className="w-48 h-auto" />
+    </div>
+  <div className="flex h-full flex-col focus-visible:outline-0">
           <div className="flex-1  mb-[48px]">
             <div className="h-full" ref={chatContainerRef}>
               <div className="flex flex-col text-sm md:pb-9">
@@ -185,7 +206,7 @@ export default function Home() {
           </div>
 
           <div className="md:pt-0 dark:border-white/20 md:border-transparent md:dark:border-transparent w-full">
-            <div className="m-auto  px-3 md:px-4 w-full md:px-5 lg:px-4 xl:px-5 fixed bottom-0 pb-4 bg-[#212121]">
+            <div className="m-auto  px-3 md:px-4 w-full md:px-5 lg:px-4 xl:px-5 fixed bottom-0 pb-4 bg-[black]">
               <div className="mx-auto flex flex-1 gap-4 text-base md:gap-5 lg:gap-6 md:max-w-3xl">
                 <form onSubmit={handleSubmit} className="w-full">
                   <div className="relative flex h-full max-w-full flex-1 flex-col">
@@ -209,7 +230,7 @@ export default function Home() {
                                 minRows={1}
                                 maxRows={3}
                                 onChange={(e) => setMessage(e.target.value)}
-                                placeholder="Message to ChatGPT"
+                                placeholder="Say hi"
                                 className="flex-1 p-2 rounded-[26px]  bg-[#2F2F2F] !text-white "
                                 classNames={{
                                   inputWrapper:

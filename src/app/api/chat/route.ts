@@ -21,10 +21,10 @@ export async function POST(req: NextRequest) {
         const completion = await openai.chat.completions.create({
           model: "gpt-4o",
           messages: [
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: message },
+            { role: "system", content: message },
+            { role: "user", content:  "Just write what the sorting hat would say next. Dont add any formating. When there are already exactly six questions asked in the script you need to not ask any more questions but decide for a house thats very important And the decision needs to based on all the answers Rutul gave in the script. Ask only one question each" },
           ],
-        //   max_tokens: 300,
+           max_tokens: 200,
           stream: true,
         });
 
